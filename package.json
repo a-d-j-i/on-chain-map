@@ -1,0 +1,40 @@
+{
+  "name": "on-chain-map",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "hardhat test",
+    "test:solidity": "hardhat test solidity",
+    "lint": "eslint --max-warnings 0 \"**/*.{js,ts}\" && solhint --max-warnings 0 \"contracts/**/*.sol\"",
+    "lint:fix": "eslint --fix \"**/*.{js,ts}\" && solhint --noPrompt --fix \"contracts/**/*.sol\"",
+    "format": "prettier --check \"**/*.{ts,js,sol,md}\"",
+    "format:fix": "prettier --write \"**/*.{ts,js,sol,md}\"",
+    "coverage": "hardhat coverage --testfiles 'test/*.ts''test/*.js'",
+    "hardhat": "hardhat",
+    "compile": "hardhat compile",
+    "size": "hardhat size-contracts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.0",
+    "@nomicfoundation/hardhat-ignition-viem": "^3.0.0",
+    "@nomicfoundation/hardhat-keystore": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
+    "@nomicfoundation/hardhat-node-test-runner": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^3.0.0",
+    "@nomicfoundation/hardhat-viem": "^3.0.0",
+    "@nomicfoundation/hardhat-viem-assertions": "^3.0.0",
+    "@types/node": "^22.17.2",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.0.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-solidity": "^2.1.0",
+    "solhint": "^6.0.1",
+    "typescript": "~5.8.0",
+    "typescript-eslint": "^8.40.0",
+    "viem": "^2.34.0"
+  }
+}

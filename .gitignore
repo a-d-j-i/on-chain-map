@@ -1,0 +1,9 @@
+# hardhat
+artifacts
+cache
+
+# editors
+.idea
+
+# node
+node_modules
