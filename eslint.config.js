@@ -10,9 +10,9 @@ export default defineConfig([
   tseslint.configs.recommended,
   prettierConfig,
   eslintPluginPrettierRecommended,
-  globalIgnores(['artifacts/*']),
-  // extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
-  // parser: '@typescript-eslint/parser',
-  // plugins: ['@typescript-eslint'],
-  // root: true,
+  globalIgnores(['artifacts/*', 'types/*']),
+  {
+    files: ['test/*.test.ts'],
+    rules: {'@typescript-eslint/no-unused-expressions': ['off']},
+  },
 ]);

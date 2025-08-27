@@ -1,5 +1,8 @@
 const config = {
+  printWidth: 120,
   singleQuote: true,
+  trailingComma: 'all',
+  arrowParens: 'avoid',
   bracketSpacing: false,
   plugins: ['prettier-plugin-solidity'],
   overrides: [
@@ -12,7 +15,6 @@ const config = {
     {
       files: '*.sol',
       options: {
-        printWidth: 120,
         tabWidth: 4,
         singleQuote: false,
       },

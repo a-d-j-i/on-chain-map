@@ -1,9 +1,34 @@
-# hardhat
-artifacts
-cache
+# Vim
+*.swp
+*.swo
 
-# editors
+# Logs
+logs
+*.log
+
+# Coverage directory used by tools like istanbul
+coverage
+coverage.json
+coverageEnv
+
+# Dependency directory
+node_modules
+
+# local env variables
+.env
+
+# macOS
+.DS_Store
+
+# IntelliJ IDE
 .idea
 
-# node
-node_modules
+# Hardhat
+/cache
+/artifacts
+/types
+/dist
+
+# Foundry
+/out
+/cache_forge
