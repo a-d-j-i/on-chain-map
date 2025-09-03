@@ -87,6 +87,7 @@ describe('TileLib main', async function () {
     // 0
     for (const t of tests) {
       await tester.set(0, t[0], t[1], t[2]);
+      printTile(tileToArray(await tester.getTile(0)));
       expect(await tester.contain(0, t[0], t[1], t[2])).to.be.true;
     }
     for (const t of tests) {

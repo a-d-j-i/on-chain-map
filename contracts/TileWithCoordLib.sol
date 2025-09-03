@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {TileLib} from "./TileLib.sol";
 
 /// @title TileWithCoordLib
+/// @author aadjiman@gmail.com
 /// @notice A square of 16x16 bits with coordinates
 /// @dev Library for managing tiles with coordinates in a 16x16 grid
 library TileWithCoordLib {

@@ -1,0 +1,2 @@
+- Add a better test for contain, specially for: (x,y,size)
+- Check all the methods that create rectangles (they must loop over size)

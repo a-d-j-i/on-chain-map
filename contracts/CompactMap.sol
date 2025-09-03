@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {TileLib} from "./TileLib.sol";
 
 /// @title CompactMap Library
+/// @author aadjiman@gmail.com
 /// @notice A library for managing 2D tile maps in a compact format
 /// @dev Uses TileLib for internal tile operations
 library CompactMap {
@@ -27,7 +28,7 @@ library CompactMap {
     /// @param x The x coordinate
     /// @param y The y coordinate
     /// @return bool True if the coordinate is set
-    function containCoord(Map storage self, uint256 x, uint256 y) public view returns (bool) {
+    function contain(Map storage self, uint256 x, uint256 y) public view returns (bool) {
         if (x > 16 * WIDTH) {
             revert InvalidCoordinates(x, y);
         }
@@ -278,6 +279,7 @@ library CompactMap {
     /// @param size The size of the rectangle
     /// @return true if is adjacent
     /// @dev Cheaper than isAdjacent(map)
+    /// @dev TODO: create an optimized version for size == 1
     function isAdjacent(Map storage self, uint256 x, uint256 y, uint256 size) public view returns (bool) {
         uint256 idx;
         TileLib.Tile memory spot;

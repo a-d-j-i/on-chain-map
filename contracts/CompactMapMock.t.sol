@@ -32,7 +32,7 @@ contract CompactMapMock {
     }
 
     function containCoord(uint256 idx, uint256 x, uint256 y) external view returns (bool) {
-        return maps[idx].containCoord(x, y);
+        return maps[idx].contain(x, y);
     }
 
     function contain(uint256 idx, uint256 x, uint256 y, uint256 size) external view returns (bool) {

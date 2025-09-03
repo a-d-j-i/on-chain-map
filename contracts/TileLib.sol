@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 /// @title TileLib
+/// @author aadjiman@gmail.com
 /// @notice a library to manage tiles, a two dimensional 16x16 boolean bitmap
 /// @dev TODO: Consider removing requires to save some gas
 library TileLib {
@@ -55,10 +56,7 @@ library TileLib {
         if (x + size > 16 || y + size > 16) {
             revert InvalidCoordinates(x, y);
         }
-        uint256 mask = ((2 ** size) - 1) << x;
-        for (uint256 i; i < size; ++i) {
-            self.data |= mask << (16 * (y + i));
-        }
+        self.data |= _getRectangleMask(x, y, size);
         return self;
     }
 
@@ -75,10 +73,7 @@ library TileLib {
         if (x + size > 16 || y + size > 16) {
             revert InvalidCoordinates(x, y);
         }
-        uint256 mask = ((2 ** size) - 1) << x;
-        for (uint256 i; i < size; ++i) {
-            self.data &= ~(mask << (16 * (y + i)));
-        }
+        self.data &= ~_getRectangleMask(x, y, size);
         return self;
     }
 
@@ -105,7 +100,7 @@ library TileLib {
         if (size == 0 || size > 16 || x + size > 16 || y + size > 16) {
             return false;
         }
-        uint256 bitMask = 1 << (x + 16 * y);
+        uint256 bitMask = _getRectangleMask(x, y, size);
         return (self.data & bitMask == bitMask);
     }
 
@@ -239,5 +234,17 @@ library TileLib {
             }
         }
         return shift;
+    }
+    /// @notice Helper function to create a bitmap mask for a rectangle
+    /// @param x The x coordinate where the rectangle starts
+    /// @param y The y coordinate where the rectangle starts
+    /// @param size The size of the rectangle (both width and height)
+    /// @return mask The bitmap mask for the specified rectangle
+    function _getRectangleMask(uint256 x, uint256 y, uint256 size) private pure returns (uint256 mask) {
+        uint256 lineMask = ((2 ** size) - 1) << x;
+        for (uint256 i; i < size; ++i) {
+            mask |= lineMask << (16 * (y + i));
+        }
+        return mask;
     }
 }

@@ -5,6 +5,7 @@ import {TileWithCoordLib} from "./TileWithCoordLib.sol";
 import {TileLib} from "./TileLib.sol";
 
 /// @title SparseMap Library
+/// @author aadjiman@gmail.com
 /// @notice Library for managing a sparse map of tiles with coordinates
 /// @dev Implements functionality for adding, removing, checking, and manipulating tiles in a sparse map
 library SparseMap {
@@ -29,7 +30,7 @@ library SparseMap {
     /// @param x The x coordinate
     /// @param y The y coordinate
     /// @return bool True if the coordinate exists in the map
-    function containCoord(Map storage self, uint256 x, uint256 y) public view returns (bool) {
+    function contain(Map storage self, uint256 x, uint256 y) public view returns (bool) {
         uint256 key = TileWithCoordLib.getKey(x, y);
         uint256 idx = self.indexes[key];
         if (idx == 0) {
