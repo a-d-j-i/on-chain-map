@@ -163,6 +163,7 @@ contract MapToken is ERC721Royalty, ERC721URIStorage, Ownable {
             revert NoAdjacentOwnedTokenToMerge(srcTokenId, dstTokenId);
         }
         _burn(srcTokenId);
+        patches[srcTokenId].clear();
         delete patches[srcTokenId];
         // TODO: Consider the gas cost of emitting the full patch?
         emit PatchMerged(srcTokenId, dstTokenId, _msgSender());
@@ -200,15 +201,17 @@ contract MapToken is ERC721Royalty, ERC721URIStorage, Ownable {
     /// @dev Can only be called by contract owner
     /// @dev Will mint a new token at each coordinate pair and unpause the contract
     function mintSeeds(Coords[] calldata coords) external onlyOwner {
-        uint256 len = coords.length;
         if (isSeeded) {
             revert AlreadySeededByOwner();
         }
-        address sender = _msgSender();
         isSeeded = true;
+
+        uint256 len = coords.length;
+        address sender = _msgSender();
         for (uint256 i; i < len; ++i) {
             _mintPixel(sender, coords[i].x, coords[i].y);
         }
+
         isSeeded = false;
     }
 
@@ -245,6 +248,23 @@ contract MapToken is ERC721Royalty, ERC721URIStorage, Ownable {
         _resetTokenRoyalty(tokenId);
     }
 
+    /// @notice Check if a coordinate is already used in the map
+    /// @param x The x coordinate to check
+    /// @param y The y coordinate to check
+    /// @return bool True if the coordinate is occupied, false otherwise
+    function isUsed(uint256 x, uint256 y) external view returns (bool) {
+        return usedMap.contain(x, y);
+    }
+
+    /// @notice Check if a patch contains a specific coordinate
+    /// @param tokenId The ID of the token to check
+    /// @param x The x coordinate to check
+    /// @param y The y coordinate to check
+    /// @return bool True if the patch contains the coordinate, false otherwise
+    function contain(uint256 tokenId, uint256 x, uint256 y) external view returns (bool) {
+        return patches[tokenId].contain(x, y);
+    }
+
     /// @notice Get the number of tiles in the used map
     /// @return The count of tiles in the used map
     function getUsedMapTileLength() external view returns (uint256) {
@@ -268,7 +288,7 @@ contract MapToken is ERC721Royalty, ERC721URIStorage, Ownable {
     /// @param tokenId The ID of the token to query
     /// @param index The index to look up
     /// @return TileWithCoord struct containing tile information at that index
-    function getUsedMapTile(
+    function getPatchTile(
         uint256 tokenId,
         uint256 index
     ) external view returns (TileWithCoordLib.TileWithCoord memory) {

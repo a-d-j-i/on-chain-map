@@ -193,6 +193,7 @@ library SparseMap {
         uint256 len = self.values.length;
         for (uint256 i; i < len; ++i) {
             delete self.indexes[self.values[i].getKey()];
+            delete self.values[i];
         }
         delete self.values;
     }
@@ -400,7 +401,7 @@ library SparseMap {
         // left
         if (x >= 16) {
             idx = _getIdx(self, x - 16, y);
-            if (idx != 0 && !self.values[idx - 1].tile.isAdjacent(corners.left)) {
+            if (idx != 0 && self.values[idx - 1].tile.isAdjacent(corners.left)) {
                 return true;
             }
         }
@@ -413,7 +414,7 @@ library SparseMap {
         }
         // middle
         idx = _getIdx(self, x, y);
-        if (idx != 0 && !self.values[idx - 1].tile.isAdjacent(corners.middle)) {
+        if (idx != 0 && self.values[idx - 1].tile.isAdjacent(corners.middle)) {
             return true;
         }
         // down
@@ -423,7 +424,7 @@ library SparseMap {
         }
         // right
         idx = _getIdx(self, x + 16, y);
-        if (idx != 0 && !self.values[idx - 1].tile.isAdjacent(corners.right)) {
+        if (idx != 0 && self.values[idx - 1].tile.isAdjacent(corners.right)) {
             return true;
         }
         return false;
