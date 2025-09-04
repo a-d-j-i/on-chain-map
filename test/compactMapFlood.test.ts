@@ -1,8 +1,13 @@
 import {tileToArray} from './helpers';
-import {describe, it} from 'node:test';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
 import {Contract} from 'ethers';
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
+
 const eqTiles = (arr1: boolean[][], arr2: boolean[][]) =>
   arr1.length == arr2.length &&
   arr1.every((r, i) => r.length === arr2[i].length && r.every((s, j) => s === arr2[i][j]));
@@ -21,7 +26,7 @@ async function floodTest(tester: Contract, isAdjacentTest: (isAdjacent: boolean)
     // }
     spot = await tester.floodStep(
       0,
-      spot.next.map(x => [x.data]),
+      spot.next.map((x: {data: bigint}) => [x.data]),
     );
   }
   const len = await tester.length(0);
@@ -45,12 +50,7 @@ async function notAdjacentTest(tester: Contract) {
   await floodTest(tester, isAdjacent => expect(isAdjacent).to.be.false);
 }
 
-describe('CompactMap.sol flood', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
-
+describe('CompactMap.sol flood', function () {
   async function setupMapTest() {
     const libFactory = await getContractFactory('CompactMap');
     const lib = await libFactory.deploy();
@@ -69,8 +69,8 @@ describe('CompactMap.sol flood', async function () {
       const tester = await loadFixture(setupMapTest);
       const spot = await tester.floodStepWithSpot(0);
       expect(spot.done).to.be.true;
-      expect(spot.next.every(x => x.data == 0n)).to.be.true;
-      expect(spot.current.every(x => x.data == 0n)).to.be.true;
+      expect(spot.next.every((x: {data: bigint}) => x.data == 0n)).to.be.true;
+      expect(spot.current.every((x: {data: bigint}) => x.data == 0n)).to.be.true;
     });
 
     it('some square in the center', async function () {

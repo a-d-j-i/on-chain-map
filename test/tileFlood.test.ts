@@ -1,9 +1,12 @@
 import {drawTile, getEmptyTile, resultToArray, setRectangle} from './helpers';
 import {Contract} from 'ethers';
-import {describe, it} from 'node:test';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
-
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
 async function setTileBox(tester: Contract, tile: boolean[][]) {
   for (let y = 0; y < tile.length; y++) {
     for (let x = 0; x < tile[0].length; x++) {
@@ -19,12 +22,7 @@ async function printGasEstimate(tester: Contract) {
   // console.log('Gas estimate:', await tester.isAdjacent.estimateGas(0));
 }
 
-describe('TileLib tester flood', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
-
+describe('TileLib tester flood', function () {
   async function setupTileLibTest() {
     const factory = await getContractFactory('TileLibMock');
     return await factory.deploy();

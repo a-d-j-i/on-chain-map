@@ -1,13 +1,13 @@
-import {drawExtendedTile, extendedTileToArray, printTile} from './helpers';
-import {describe, it} from 'node:test';
+import {drawExtendedTile, extendedTileToArray, printTile} from './helpers.ts';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
 
-describe('TileLib grow and flood', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
+describe('TileLib grow and flood', function () {
   async function setupTileLibTest() {
     const factory = await getContractFactory('TileLibMock');
     return await factory.deploy();

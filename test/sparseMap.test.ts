@@ -1,14 +1,13 @@
 import {createTestMap, tileWithCoordToJS} from './helpers';
-import {describe, it} from 'node:test';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
 
-describe('SparseMap.sol main', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
-
+describe('SparseMap.sol main', function () {
   async function setupMapTest() {
     const libFactory = await getContractFactory('SparseMap');
     const lib = await libFactory.deploy();

@@ -1,14 +1,14 @@
-import {tileWithCoordToJS, printTileWithCoord} from './helpers';
-import {describe, it} from 'node:test';
+import {printTileWithCoord, tileWithCoordToJS} from './helpers';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
 
-describe('TileWithCoordLib main', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
 
+describe('TileWithCoordLib main', function () {
   async function setupTileWithCoordsLibTest() {
     const factory = await getContractFactory('TileWithCoordLibMock');
     return await factory.deploy();

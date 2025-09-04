@@ -1,14 +1,13 @@
 import {createTestMap, tileToArray} from './helpers';
-import {describe, it} from 'node:test';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
 
-describe('CompactMap.sol main', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
-
+describe('CompactMap.sol main', function () {
   async function setupMapTest() {
     const libFactory = await getContractFactory('CompactMap');
     const lib = await libFactory.deploy();
@@ -121,7 +120,7 @@ describe('CompactMap.sol main', async function () {
         await tester.clearMap(0, i + 1);
       }
     }
-    expect((await getMap(0)).every(x => x.data == 0n)).to.be.true;
+    expect((await getMap(0)).every((x: {data: bigint}) => x.data == 0n)).to.be.true;
   });
 
   it('clear', async function () {
@@ -142,7 +141,7 @@ describe('CompactMap.sol main', async function () {
         await tester.clear(0, t[0], t[1], t[2]);
       }
     }
-    expect((await getMap(0)).every(x => x.data == 0n)).to.be.true;
+    expect((await getMap(0)).every((x: {data: bigint}) => x.data == 0n)).to.be.true;
   });
 
   it('clear 2', async function () {
@@ -159,7 +158,7 @@ describe('CompactMap.sol main', async function () {
     }
     await tester.clear(0);
     // clear
-    expect((await getMap(0)).every(x => x.data == 0n)).to.be.true;
+    expect((await getMap(0)).every((x: {data: bigint}) => x.data == 0n)).to.be.true;
   });
 
   it('isEqual', async function () {

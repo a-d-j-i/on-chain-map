@@ -25,7 +25,7 @@ expensive mainnet networks.
 This example project includes:
 
 - A simple Hardhat 3 configuration file.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html) and `ethers`
+- TypeScript integration tests using `mocha` and `ethers`
 - Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
 
 ## Usage

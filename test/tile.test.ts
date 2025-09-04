@@ -1,14 +1,13 @@
 import {getEmptyTile, printTile, tileToArray} from './helpers';
-import {describe, it} from 'node:test';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
 
-describe('TileLib main', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
-
+describe('TileLib main', function () {
   async function setupTileLibTest() {
     const factory = await getContractFactory('TileLibMock');
     return await factory.deploy();

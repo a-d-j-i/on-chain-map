@@ -9,7 +9,7 @@
     "lint:fix": "eslint --fix \"**/*.{js,ts}\" && solhint --noPrompt --fix \"contracts/**/*.sol\"",
     "format": "prettier --check \"**/*.{ts,js,sol,md}\"",
     "format:fix": "prettier --write \"**/*.{ts,js,sol,md}\"",
-    "coverage": "hardhat coverage --testfiles 'test/*.ts''test/*.js'",
+    "coverage": "hardhat test --coverage",
     "hardhat": "hardhat",
     "compile": "hardhat compile",
     "size": "hardhat size-contracts"
@@ -22,7 +22,6 @@
     "@nomicfoundation/hardhat-keystore": "^3.0.0",
     "@nomicfoundation/hardhat-mocha": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
-    "@nomicfoundation/hardhat-node-test-runner": "^3.0.0",
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-typechain": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^3.0.0",

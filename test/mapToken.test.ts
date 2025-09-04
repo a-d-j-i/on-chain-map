@@ -1,14 +1,13 @@
-import {describe, it} from 'node:test';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
 import {Contract, Log, Signer, TransactionReceipt} from 'ethers';
+const {
+  ethers: {getContractFactory, getSigners},
+  networkHelpers: {loadFixture},
+} = await network.connect();
 
-describe('MapToken', async function () {
-  const {
-    ethers: {getContractFactory, getSigners},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
-
+describe('MapToken', function () {
   async function deployMapToken() {
     const libFactory = await getContractFactory('SparseMap');
     const lib = await libFactory.deploy();

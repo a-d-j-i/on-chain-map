@@ -1,8 +1,13 @@
 import {tileToArray} from './helpers';
-import {describe, it} from 'node:test';
+import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
 import {Contract} from 'ethers';
+const {
+  ethers: {getContractFactory},
+  networkHelpers: {loadFixture},
+} = await network.connect();
+
 const eqTiles = (arr1: boolean[][], arr2: boolean[][]) =>
   arr1.length == arr2.length &&
   arr1.every((r, i) => r.length === arr2[i].length && r.every((s, j) => s === arr2[i][j]));
@@ -42,12 +47,7 @@ async function notAdjacentTest(tester: Contract) {
   await floodTest(tester, isAdjacent => expect(isAdjacent).to.be.false);
 }
 
-describe('SparseMap.sol flood', async function () {
-  const {
-    ethers: {getContractFactory},
-    networkHelpers: {loadFixture},
-  } = await network.connect();
-
+describe('SparseMap.sol flood', function () {
   async function setupMapTest() {
     const libFactory = await getContractFactory('SparseMap');
     const lib = await libFactory.deploy();
