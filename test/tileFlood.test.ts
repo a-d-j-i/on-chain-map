@@ -1,4 +1,4 @@
-import {drawTile, getEmptyTile, resultToArray, setRectangle} from './helpers';
+import {drawTile, getEmptyTile, resultToArray, setRectangle} from './helpers.ts';
 import {Contract} from 'ethers';
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';

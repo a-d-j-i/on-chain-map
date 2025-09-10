@@ -1,4 +1,4 @@
-import {printTileWithCoord, tileWithCoordToJS} from './helpers';
+import {printTileWithCoord, tileWithCoordToJS} from './helpers.ts';
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';

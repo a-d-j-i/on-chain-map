@@ -10,6 +10,7 @@ logs
 coverage
 coverage.json
 coverageEnv
+report
 
 # Dependency directory
 node_modules

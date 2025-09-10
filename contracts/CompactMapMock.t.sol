@@ -4,7 +4,6 @@ pragma solidity ^0.8.28;
 import {CompactMap} from "./CompactMap.sol";
 import {TileWithCoordLib} from "./TileWithCoordLib.sol";
 import {TileLib} from "./TileLib.sol";
-import "hardhat/console.sol";
 
 contract CompactMapMock {
     using CompactMap for CompactMap.Map;
@@ -43,6 +42,10 @@ contract CompactMapMock {
         return maps[idx].isAdjacent();
     }
 
+    function isAdjacentRectangle(uint256 idx, uint256 x, uint256 y, uint256 size) external view returns (bool) {
+        return maps[idx].isAdjacent(x, y, size);
+    }
+
     function floodStep(
         uint256 idx,
         TileLib.Tile[] memory data
@@ -53,9 +56,9 @@ contract CompactMapMock {
 
     function floodStepWithSpot(
         uint256 idx
-    ) external view returns (TileLib.Tile[16] memory current, TileLib.Tile[] memory next, bool done) {
-        current = maps[idx].values;
-        next = new TileLib.Tile[](16);
+    ) external view returns (TileLib.Tile[64] memory current, TileLib.Tile[] memory next, bool done) {
+        current = maps[idx].tiles;
+        next = new TileLib.Tile[](64);
         (bool found, uint256 i) = maps[idx].findNonEmptyTile();
         if (!found) {
             return (current, next, true);
@@ -69,7 +72,11 @@ contract CompactMapMock {
         if (!found) {
             return tile;
         }
-        return maps[idx].values[i].findAPixel();
+        return maps[idx].tiles[i].findAPixel();
+    }
+
+    function findNonEmptyTile(uint256 idx) external view returns (bool found, uint256 i) {
+        return maps[idx].findNonEmptyTile();
     }
 
     function containMap(uint256 idx, uint256 contained) external view returns (bool) {
@@ -80,11 +87,15 @@ contract CompactMapMock {
         return maps[idx].isEqual(maps[other]);
     }
 
-    function length(uint256 idx) external view returns (uint256) {
-        return maps[idx].length();
+    function isEmpty(uint256 idx) external view returns (bool) {
+        return maps[idx].isEmpty();
     }
 
-    function at(uint256 idx, uint256 index) external view returns (TileLib.Tile memory) {
-        return maps[idx].at(index);
+    function getMap(uint256 idx) external view returns (CompactMap.Map memory) {
+        return maps[idx].getMap();
+    }
+
+    function getSize(uint256 idx) external view returns (uint256 width, uint256 height) {
+        return maps[idx].getSize();
     }
 }

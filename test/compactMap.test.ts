@@ -1,7 +1,8 @@
-import {createTestMap, tileToArray} from './helpers';
+import {createTestMap, tileToArray} from './helpers.ts';
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
+
 const {
   ethers: {getContractFactory},
   networkHelpers: {loadFixture},
@@ -22,14 +23,16 @@ describe('CompactMap.sol main', function () {
     return {
       tester,
       getMap: async function (idx: bigint) {
-        const length = await tester.length(idx);
+        const map = await tester.getMap(idx);
+        const size = await tester.getSize(idx);
+        const w = size.width / 16n;
         const ret = [];
-        for (let i = 0n; i < length; i++) {
-          const data = await tester.at(idx, i);
+        for (let i = 0n; i < map.tiles.length; i++) {
+          const data = map.tiles[i].data;
           ret.push({
             tile: tileToArray(data),
-            x: (i % 4n) * 16n,
-            y: (i / 4n) * 16n,
+            x: (i % w) * 16n,
+            y: (i / w) * 16n,
             idx: i,
             data,
           });
@@ -42,6 +45,9 @@ describe('CompactMap.sol main', function () {
   it('Some Map With Coords', async function () {
     const {tester, getMap} = await loadFixture(setupMapTest);
     const tests = createTestMap(64, 64, 30);
+    const size = await tester.getSize(0);
+    expect(size.width).to.be.equal(8n * 16n);
+    expect(size.height).to.be.equal(8n * 16n);
     // 0
     for (const t of tests) {
       await tester.set(0, t[0], t[1], t[2]);
@@ -51,7 +57,7 @@ describe('CompactMap.sol main', function () {
     for (const t of tests) {
       const x0 = BigInt(t[0]);
       const y0 = BigInt(t[1]);
-      const idx = x0 / 16n + (y0 / 16n) * 4n;
+      const idx = x0 / 16n + (y0 / 16n) * (size.width / 16n);
       // check the first pixel of the box
       expect(map[idx].tile[y0 % 16n][x0 % 16n]).to.be.true;
     }
@@ -88,6 +94,7 @@ describe('CompactMap.sol main', function () {
     const maps = createTestMap(64, 64, 10);
     for (const t of maps) {
       await tester.set(0, t[0], t[1], t[2]);
+      expect(await tester.containCoord(0, t[0], t[1])).to.be.true;
       expect(await tester.contain(0, t[0], t[1], t[2])).to.be.true;
       for (let i = 0; i < t[2]; i++) {
         for (let j = 0; j < t[2]; j++) {
@@ -135,12 +142,14 @@ describe('CompactMap.sol main', function () {
         await tester.set(0, t[0], t[1], t[2]);
       }
     }
+    expect(await tester.isEmpty(0)).to.be.false;
     // clear
     for (const map of maps) {
       for (const t of map) {
         await tester.clear(0, t[0], t[1], t[2]);
       }
     }
+    expect(await tester.isEmpty(0)).to.be.true;
     expect((await getMap(0)).every((x: {data: bigint}) => x.data == 0n)).to.be.true;
   });
 
@@ -182,6 +191,27 @@ describe('CompactMap.sol main', function () {
     expect(await tester.isEqual(1, 0)).to.be.true;
     expect(await tester.containMap(0, 1)).to.be.true;
     expect(await tester.containMap(1, 0)).to.be.true;
+  });
+
+  it('isAdjacentRectangle', async function () {
+    const {tester} = await loadFixture(setupMapTest);
+    const size = await tester.getSize(0);
+    const x = size.width / 2n;
+    const y = size.height / 2n;
+    await tester.set(0, x, y, 3);
+
+    expect(await tester.isAdjacentRectangle(0, x, y, 1)).to.be.true;
+    expect(await tester.isAdjacentRectangle(0, x, y, 16)).to.be.true;
+
+    expect(await tester.isAdjacentRectangle(0, x + 3n, y, 3)).to.be.true;
+    expect(await tester.isAdjacentRectangle(0, x, y + 3n, 3)).to.be.true;
+    expect(await tester.isAdjacentRectangle(0, x - 3n, y, 3)).to.be.true;
+    expect(await tester.isAdjacentRectangle(0, x, y - 3n, 3)).to.be.true;
+
+    expect(await tester.isAdjacentRectangle(0, x + 3n, y + 3n, 3)).to.be.false;
+    expect(await tester.isAdjacentRectangle(0, x - 3n, y - 3n, 3)).to.be.false;
+    expect(await tester.isAdjacentRectangle(0, x - 3n, y + 3n, 3)).to.be.false;
+    expect(await tester.isAdjacentRectangle(0, x - 3n, y + 3n, 3)).to.be.false;
   });
 
   // TODO: Add more tests, specially for clear, grid like things, etc...

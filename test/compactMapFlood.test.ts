@@ -1,8 +1,9 @@
-import {tileToArray} from './helpers';
+import {tileToArray} from './helpers.ts';
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
 import {Contract} from 'ethers';
+
 const {
   ethers: {getContractFactory},
   networkHelpers: {loadFixture},
@@ -14,6 +15,7 @@ const eqTiles = (arr1: boolean[][], arr2: boolean[][]) =>
 
 async function floodTest(tester: Contract, isAdjacentTest: (isAdjacent: boolean) => void): Promise<void> {
   let spot = await tester.floodStepWithSpot(0);
+  // const {printTile} = await import('./helpers.ts');
   // let j = 0;
   while (!spot.done) {
     // console.log('------------------------------------', j++);
@@ -29,10 +31,10 @@ async function floodTest(tester: Contract, isAdjacentTest: (isAdjacent: boolean)
       spot.next.map((x: {data: bigint}) => [x.data]),
     );
   }
-  const len = await tester.length(0);
+  const map = await tester.getMap(0);
   let adj = true;
-  for (let i = 0; i < len; i++) {
-    const orig = await tester.at(0, i);
+  for (let i = 0; i < map.tiles.length; i++) {
+    const orig = map.tiles[i];
     const floodTile = tileToArray(spot.next[i]);
     const origTile = tileToArray(orig.data);
     adj = adj && eqTiles(floodTile, origTile);
@@ -78,6 +80,7 @@ describe('CompactMap.sol flood', function () {
       await tester.set(0, 8, 8, 6);
       await adjacentTest(tester);
     });
+
     it('a square over two tiles', async function () {
       const tester = await loadFixture(setupMapTest);
       await tester.set(0, 0, 8, 8);
@@ -102,9 +105,11 @@ describe('CompactMap.sol flood', function () {
     });
 
     it('full map', async function () {
+      this.timeout(10000);
       const tester = await loadFixture(setupMapTest);
-      for (let x = 0; x < 4 * 16; x += 16) {
-        for (let y = 0; y < 4 * 16; y += 16) {
+      const size = await tester.getSize(0);
+      for (let x = 0n; x < size.width; x += 16n) {
+        for (let y = 0n; y < size.height; y += 16n) {
           await tester.set(0, x, y, 16);
         }
       }
@@ -115,7 +120,7 @@ describe('CompactMap.sol flood', function () {
     it('two squares in the same tile', async function () {
       const tester = await loadFixture(setupMapTest);
       await tester.set(0, 6, 6, 6);
-      await tester.set(0, 18, 18, 6);
+      await tester.set(0, 14, 14, 2);
       await notAdjacentTest(tester);
     });
     it('two squares in two different tiles', async function () {
@@ -124,5 +129,25 @@ describe('CompactMap.sol flood', function () {
       await tester.set(0, 36, 36, 6);
       await notAdjacentTest(tester);
     });
+  });
+  it('start searching from the middle of the map', async function () {
+    const tester = await loadFixture(setupMapTest);
+    const size = await tester.getSize(0);
+    let ret;
+
+    await tester.set(0, size.width - 1n, size.height - 1n, 1);
+    ret = await tester.findNonEmptyTile(0);
+    expect(ret.found).to.be.true;
+    expect(ret.i).to.be.equal((size.width * size.height) / 16n / 16n - 1n);
+
+    await tester.set(0, 0, 0, 1);
+    ret = await tester.findNonEmptyTile(0);
+    expect(ret.found).to.be.true;
+    expect(ret.i).to.be.equal(0);
+
+    await tester.set(0, size.width, size.width / 2n - 1n, 1);
+    ret = await tester.findNonEmptyTile(0);
+    expect(ret.found).to.be.true;
+    expect(ret.i).to.be.equal((size.width * size.height) / 16n / 16n / 2n);
   });
 });

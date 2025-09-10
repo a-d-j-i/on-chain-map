@@ -380,7 +380,7 @@ library SparseMap {
         // Mask it.
         done = true;
         for (i = 0; i < len; ++i) {
-            next[i] = next[i].and(self.values[i].tile);
+            next[i].data = next[i].data & self.values[i].tile.data;
             done = done && next[i].isEqual(current[i]);
         }
         return (next, done);

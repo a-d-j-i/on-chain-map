@@ -1,7 +1,7 @@
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
-import {Contract, Log, Signer, TransactionReceipt} from 'ethers';
+import {Contract, Log, TransactionReceipt} from 'ethers';
 const {
   ethers: {getContractFactory, getSigners},
   networkHelpers: {loadFixture},
