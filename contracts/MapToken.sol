@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721Royalty} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
-import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import {ERC721Utils} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol";
 
 import {TileWithCoordLib} from "./TileWithCoordLib.sol";
@@ -15,7 +14,7 @@ import {SparseMap} from "./SparseMap.sol";
 /// @notice Users mint an initial isolated pixel, then may grow by adding adjacent pixels they connect to.
 /// @notice Transfers are allowed only if the recipient already owns an adjacent pixel.
 /// @dev Occupancy adjacency checks delegate to SparseMap; ownership adjacency is validated via ERC721 ownership.
-contract MapToken is ERC721Royalty, ERC721URIStorage, Ownable {
+contract MapToken is ERC721Royalty, Ownable {
     using SparseMap for SparseMap.Map;
 
     /// @notice Struct for storing x,y coordinates
@@ -295,20 +294,6 @@ contract MapToken is ERC721Royalty, ERC721URIStorage, Ownable {
         return patches[tokenId].at(index);
     }
 
-    /// @notice Get the URI for a token
-    /// @param tokenId The ID of the token
-    /// @return The token's URI
-    function tokenURI(uint256 tokenId) public view virtual override(ERC721, ERC721URIStorage) returns (string memory) {
-        return ERC721URIStorage.tokenURI(tokenId);
-    }
-
-    /// @inheritdoc ERC721
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(ERC721Royalty, ERC721URIStorage) returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
-
     /// @notice Internal function to override ERC721 transfer behavior; enforces isSeeded requirement
     /// @param to The address to transfer to
     /// @param tokenId The token ID
@@ -336,5 +321,12 @@ contract MapToken is ERC721Royalty, ERC721URIStorage, Ownable {
         usedMap.set(x, y, 1);
         emit PatchMinted(newTokenId, x, y, sender);
         return newTokenId;
+    }
+
+    /// @notice Returns the base URI for all token metadata
+    /// @return The base URI string
+    /// @dev Override for custom base URI, used by tokenURI() in ERC721
+    function _baseURI() internal view virtual override returns (string memory) {
+        return "https://todo/something/";
     }
 }

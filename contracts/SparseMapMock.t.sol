@@ -38,7 +38,7 @@ contract SparseMapMock {
         maps[idx].clear();
     }
 
-    function containCoord(uint256 idx, uint256 x, uint256 y) external view returns (bool) {
+    function containPixel(uint256 idx, uint256 x, uint256 y) external view returns (bool) {
         return maps[idx].contain(x, y);
     }
 
@@ -85,6 +85,14 @@ contract SparseMapMock {
 
     function at(uint256 idx, uint256 index) external view returns (TileWithCoordLib.TileWithCoord memory) {
         return maps[idx].at(index);
+    }
+
+    function paginate(
+        uint256 idx,
+        uint256 offset,
+        uint256 limit
+    ) external view returns (TileWithCoordLib.TileWithCoord[] memory) {
+        return maps[idx].at(offset, limit);
     }
 
     function containTileAtCoord(uint256 idx, uint256 x, uint256 y) external view returns (bool) {

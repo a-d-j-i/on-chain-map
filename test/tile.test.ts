@@ -2,6 +2,7 @@ import {getEmptyTile, printTile, tileToArray} from './helpers.ts';
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
+
 const {
   ethers: {getContractFactory},
   networkHelpers: {loadFixture},
@@ -115,6 +116,13 @@ describe('TileLib main', function () {
         expect(await tester.isEqual(0, 1)).to.be.true;
       }
     }
+  });
+
+  it('findAPixel should return false if coords are wrong', async function () {
+    const tester = await loadFixture(setupTileLibTest);
+    expect(await tester.containPixel(0, 0, 16)).to.be.false;
+    expect(await tester.containPixel(0, 16, 0)).to.be.false;
+    expect(await tester.containPixel(0, 16, 16)).to.be.false;
   });
   // TODO: Add more tests, specially for clear, grid like things, etc...
 });

@@ -49,7 +49,7 @@ library TileWithCoordLib {
         uint256 size
     ) internal pure returns (TileWithCoord memory) {
         if (getXInt(self) != xi / 16 || getYInt(self) != yi / 16) {
-            revert InvalidCoordinates(getXInt(self), getYInt(self), xi / 16, yi / 16);
+            revert InvalidCoordinates(getX(self), getY(self), xi, yi);
         }
         self.tile = self.tile.set(xi % 16, yi % 16, size);
         return self;
@@ -68,7 +68,7 @@ library TileWithCoordLib {
         uint256 size
     ) internal pure returns (TileWithCoord memory) {
         if (getXInt(self) != xi / 16 || getYInt(self) != yi / 16) {
-            revert InvalidCoordinates(getXInt(self), getYInt(self), xi, yi);
+            revert InvalidCoordinates(getX(self), getY(self), xi, yi);
         }
         self.tile = self.tile.clear(xi % 16, yi % 16, size);
         return self;
@@ -80,7 +80,7 @@ library TileWithCoordLib {
     /// @return The merged tile
     function merge(TileWithCoord memory self, TileWithCoord memory value) internal pure returns (TileWithCoord memory) {
         if (getXInt(self) != getXInt(value) || getYInt(self) != getYInt(value)) {
-            revert InvalidCoordinates(getXInt(self), getYInt(self), getXInt(value), getYInt(value));
+            revert InvalidCoordinates(getX(self), getY(self), getX(value), getY(value));
         }
         self.tile = self.tile.or(value.tile);
         return self;
@@ -95,7 +95,7 @@ library TileWithCoordLib {
         TileWithCoord memory value
     ) internal pure returns (TileWithCoord memory) {
         if (getXInt(self) != getXInt(value) || getYInt(self) != getYInt(value)) {
-            revert InvalidCoordinates(getXInt(self), getYInt(self), getXInt(value), getYInt(value));
+            revert InvalidCoordinates(getX(self), getY(self), getX(value), getY(value));
         }
         self.tile = self.tile.subtract(value.tile);
         return self;
@@ -108,7 +108,7 @@ library TileWithCoordLib {
     /// @return True if the point is set in the tile
     function contain(TileWithCoord memory self, uint256 xi, uint256 yi) internal pure returns (bool) {
         if (getXInt(self) != xi / 16 || getYInt(self) != yi / 16) {
-            revert InvalidCoordinates(getXInt(self), getYInt(self), xi, yi);
+            revert InvalidCoordinates(getX(self), getY(self), xi, yi);
         }
         return self.tile.contain(xi % 16, yi % 16);
     }
@@ -121,7 +121,7 @@ library TileWithCoordLib {
     /// @return True if the entire area is set in the tile
     function contain(TileWithCoord memory self, uint256 xi, uint256 yi, uint256 size) internal pure returns (bool) {
         if (getXInt(self) != xi / 16 || getYInt(self) != yi / 16) {
-            revert InvalidCoordinates(getXInt(self), getYInt(self), xi, yi);
+            revert InvalidCoordinates(getX(self), getY(self), xi, yi);
         }
         return self.tile.contain(xi % 16, yi % 16, size);
     }

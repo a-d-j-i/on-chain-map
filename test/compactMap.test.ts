@@ -94,11 +94,11 @@ describe('CompactMap.sol main', function () {
     const maps = createTestMap(64, 64, 10);
     for (const t of maps) {
       await tester.set(0, t[0], t[1], t[2]);
-      expect(await tester.containCoord(0, t[0], t[1])).to.be.true;
+      expect(await tester.containPixel(0, t[0], t[1])).to.be.true;
       expect(await tester.contain(0, t[0], t[1], t[2])).to.be.true;
       for (let i = 0; i < t[2]; i++) {
         for (let j = 0; j < t[2]; j++) {
-          expect(await tester.containCoord(0, t[0] + i, t[1] + j)).to.be.true;
+          expect(await tester.containPixel(0, t[0] + i, t[1] + j)).to.be.true;
         }
       }
     }

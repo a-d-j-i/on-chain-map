@@ -136,15 +136,13 @@ library TileLib {
         return self;
     }
 
-    /// @notice Performs bitwise OR between a tile and raw value
-    /// @param self The tile
-    /// @param val The value to OR with
-    /// @return The result tile
-    function or(Tile memory self, uint256 val) internal pure returns (Tile memory) {
-        self.data = self.data | val;
+    /// @notice Performs bitwise NOT operation on a tile
+    /// @param self The tile to invert
+    /// @return The inverted tile
+    function not(Tile memory self) internal pure returns (Tile memory) {
+        self.data = ~self.data;
         return self;
     }
-
     /// @notice Performs bitwise AND between two tiles
     /// @param self The first tile
     /// @param b The second tile
@@ -216,7 +214,6 @@ library TileLib {
         if (self.data != 0) {
             shift = findAPixel(self.data);
             ret.data = ret.data | (1 << shift);
-            return ret;
         }
         return ret;
     }

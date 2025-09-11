@@ -30,7 +30,7 @@ contract CompactMapMock {
         maps[idx].clear();
     }
 
-    function containCoord(uint256 idx, uint256 x, uint256 y) external view returns (bool) {
+    function containPixel(uint256 idx, uint256 x, uint256 y) external view returns (bool) {
         return maps[idx].contain(x, y);
     }
 

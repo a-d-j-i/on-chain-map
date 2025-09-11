@@ -1,7 +1,9 @@
+import {tileWithCoordToJS, getEmptyTile} from './helpers.ts';
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
-import {Contract, Log, TransactionReceipt} from 'ethers';
+import {ZeroAddress, Contract, Log, TransactionReceipt} from 'ethers';
+
 const {
   ethers: {getContractFactory, getSigners},
   networkHelpers: {loadFixture},
@@ -25,6 +27,7 @@ describe('MapToken', function () {
     await token.waitForDeployment();
     return {token, deployer, admin, user1, user2, limits};
   }
+
   async function deployMapTokenAndSeed() {
     const d = await deployMapToken();
     for (let i = 0; i < 4; i++) {
@@ -43,6 +46,7 @@ describe('MapToken', function () {
     expect(await d.token.isSeeded()).to.be.true;
     return d;
   }
+
   async function getNewTokenIdFromReceipt(
     token: Contract,
     receipt: TransactionReceipt,
@@ -53,11 +57,13 @@ describe('MapToken', function () {
     expect(mintedEvent, evName + ' event missing').to.exist;
     return mintedEvent!.args[argName] as bigint;
   }
+
   async function mintIsolated(token: Contract, signer: Signer, x: number, y: number) {
     const tx = await token.connect(signer).mint(x, y);
     const receipt = await tx.wait();
     return getNewTokenIdFromReceipt(token, receipt, 'PatchMinted', 'tokenId');
   }
+
   async function containCheck(
     token: Contract,
     tokenToCheckPresence: bigint,
@@ -279,5 +285,62 @@ describe('MapToken', function () {
     [recv, amt] = await token.royaltyInfo(t, salePrice);
     expect(recv).to.equal(user1);
     expect(amt).to.equal((salePrice * 1000n) / 10_000n);
+
+    await token.connect(admin).deleteDefaultRoyalty(); // 10%
+    [recv, amt] = await token.royaltyInfo(t, salePrice);
+    expect(recv).to.equal(ZeroAddress);
+    expect(amt).to.equal(0n);
+  });
+
+  it('token uri', async function () {
+    const {token, user1} = await loadFixture(deployMapTokenAndSeed);
+    const tokenId = await mintIsolated(token, user1, 10, 10);
+    expect(await token.tokenURI(tokenId)).to.equal('https://todo/something/' + tokenId.toString());
+    await expect(token.tokenURI(tokenId + 100n)).to.be.revertedWithCustomError(token, 'ERC721NonexistentToken');
+  });
+
+  it('supportInterface', async function () {
+    const {token} = await loadFixture(deployMapTokenAndSeed);
+    const interfaces = {
+      IERC2981: '0x2a55205a',
+      IERC165: '0x01ffc9a7',
+      IERC721Metadata: '0x5b5e139f',
+      IERC721: '0x80ac58cd',
+      IERC721MetadataURI: '0x5b5e139f',
+    };
+    for (const i of Object.values(interfaces)) {
+      expect(await token.supportsInterface(i), i + ' must be supported').to.be.true;
+    }
+  });
+
+  it('populate and get used map and patches', async function () {
+    const {token, user1, admin} = await loadFixture(deployMapToken);
+    await token.connect(admin).setSeeded(true);
+    const tokenIds = [];
+    const cant = 16;
+    for (let i = 0; i < cant; i++) {
+      tokenIds.push(await mintIsolated(token, user1, i * 16, i * 16));
+    }
+    const usedLen = await token.getUsedMapTileLength();
+
+    const onePixTile = getEmptyTile();
+    onePixTile[0][0] = true;
+    expect(usedLen).to.equal(cant);
+    for (let i = 0; i < usedLen; i++) {
+      const result = tileWithCoordToJS(await token.getUsedMapTile(i));
+      expect(result.x).to.be.equal(BigInt(i * 16));
+      expect(result.y).to.be.equal(BigInt(i * 16));
+      expect(result.tile).to.be.eql(onePixTile);
+    }
+
+    for (let i = 0; i < tokenIds.length; i++) {
+      const t = tokenIds[i];
+      const patchLen = await token.getPatchTileLength(t);
+      expect(patchLen).to.equal(1n);
+      const result = tileWithCoordToJS(await token.getPatchTile(t, 0));
+      expect(result.x).to.be.equal(BigInt(i * 16));
+      expect(result.y).to.be.equal(BigInt(i * 16));
+      expect(result.tile).to.be.eql(onePixTile);
+    }
   });
 });

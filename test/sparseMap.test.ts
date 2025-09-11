@@ -1,7 +1,8 @@
-import {createTestMap, tileWithCoordToJS} from './helpers.ts';
+import {createTestMap, tileWithCoordToJS, getEmptyTile, setRectangle} from './helpers.ts';
 import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
+
 const {
   ethers: {getContractFactory},
   networkHelpers: {loadFixture},
@@ -84,7 +85,7 @@ describe('SparseMap.sol main', function () {
       expect(await tester.containTileAtCoord(0, t[0], t[1])).to.be.true;
       for (let i = 0; i < t[2]; i++) {
         for (let j = 0; j < t[2]; j++) {
-          expect(await tester.containCoord(0, t[0] + i, t[1] + j)).to.be.true;
+          expect(await tester.containPixel(0, t[0] + i, t[1] + j)).to.be.true;
         }
       }
     }
@@ -178,5 +179,23 @@ describe('SparseMap.sol main', function () {
     expect(await tester.containMap(1, 0)).to.be.true;
   });
 
+  it('pagination', async function () {
+    const {tester} = await loadFixture(setupMapTest);
+    for (let i = 0; i < 30; i++) {
+      await tester.set(0, i * 16, i * 16, 3);
+    }
+    const ninePixTile = getEmptyTile();
+    setRectangle(ninePixTile, 0, 0, 3, 3);
+    ninePixTile[0][0] = true;
+    const offset = 3;
+    const limit = 5;
+    const tiles = await tester.paginate(0, offset, limit);
+    for (let i = 0; i < limit; i++) {
+      const a = tileWithCoordToJS(tiles[i]);
+      expect(a.x).to.be.equal(BigInt(offset * 16 + i * 16));
+      expect(a.x).to.be.equal(BigInt(offset * 16 + i * 16));
+      expect(a.tile).to.be.eql(ninePixTile);
+    }
+  });
   // TODO: Add more tests, specially for clear, grid like things, etc...
 });
