@@ -40,7 +40,11 @@ contract MapToken is ERC721Royalty, Ownable {
     /// @notice Thrown when attempting to split a patch that caller doesn't fully own
     error NotRectangleOwner(uint256 tokenId, uint256 x, uint256 y, uint256 size);
 
+    /// @notice Error thrown when a patch exceeds the maximum allowed size
+    error PatchTooBig();
+    /// @notice Error thrown when attempting to transfer tokens before contract is seeded
     error NotSeededByOwner();
+    /// @notice Error thrown when attempting to seed an already seeded contract
     error AlreadySeededByOwner();
 
     /// @notice Emitted when a new patch is minted
@@ -81,6 +85,10 @@ contract MapToken is ERC721Royalty, Ownable {
 
     /// @dev Structure to track the minted pixels
     SparseMap.Map private usedMap;
+
+    /// @notice Maximum size of a patch allowed per token
+    /// @dev Keeps patch sizes manageable and fits contract constraints
+    uint256 public immutable MAX_PATH_SIZE = 25;
 
     /// @notice The maximum map size coordinates (x,y)
     /// @dev Used to validate that coordinates are within bounds during minting
@@ -137,11 +145,15 @@ contract MapToken is ERC721Royalty, Ownable {
         if (usedMap.contain(x, y)) {
             revert PositionAlreadyOccupied(x, y);
         }
-        if (!patches[tokenId].isAdjacent(x, y, 1)) {
+        SparseMap.Map storage p = patches[tokenId];
+        if (!p.isAdjacent(x, y, 1)) {
             revert NoAdjacentOwnedToken(tokenId, x, y);
         }
-        patches[tokenId].set(x, y, 1);
+        p.set(x, y, 1);
         usedMap.set(x, y, 1);
+        if (p.length() > MAX_PATH_SIZE) {
+            revert PatchTooBig();
+        }
         // TODO: Consider the gas cost of emitting the full patch?
         emit PatchGrown(tokenId, x, y, _msgSender());
     }
@@ -150,20 +162,25 @@ contract MapToken is ERC721Royalty, Ownable {
     /// @param srcTokenId The source token ID to merge from
     /// @param dstTokenId The destination token ID to merge into
     /// @dev Patches must be adjacent and owned by the same address
-    /// @dev there is a limit on the size that can be merged because of gas usage.
     function merge(uint256 srcTokenId, uint256 dstTokenId) external {
         address sender = _msgSender();
         if (_ownerOf(srcTokenId) != sender || _ownerOf(dstTokenId) != sender) {
             revert ERC721InvalidOwner(sender);
         }
         // TODO: Instead of set+check we can improve this by starting with one map instead of one pixel.
-        patches[dstTokenId].setMap(patches[srcTokenId]);
-        if (!patches[dstTokenId].isAdjacent()) {
+        SparseMap.Map storage p = patches[dstTokenId];
+        p.setMap(patches[srcTokenId]);
+        if (!p.isAdjacent()) {
             revert NoAdjacentOwnedTokenToMerge(srcTokenId, dstTokenId);
         }
+        if (p.length() > MAX_PATH_SIZE) {
+            revert PatchTooBig();
+        }
+
         _burn(srcTokenId);
         patches[srcTokenId].clear();
         delete patches[srcTokenId];
+
         // TODO: Consider the gas cost of emitting the full patch?
         emit PatchMerged(srcTokenId, dstTokenId, _msgSender());
     }

@@ -22,6 +22,13 @@ library SparseMap {
         mapping(uint256 => uint256) indexes;
     }
 
+    struct TileWithCoordCache {
+        bool cached;
+        uint256 x;
+        uint256 y;
+        uint256 tileData;
+    }
+
     /// @notice Error thrown when a tile is not found in the map
     error TileMissing();
 
@@ -292,18 +299,30 @@ library SparseMap {
         TileLib.Tile[] memory spot = new TileLib.Tile[](self.values.length);
         // We assume that all self.values[] are non empty (we remove them if they are empty).
         spot[0] = self.values[0].tile.findAPixel();
-        bool done;
-        while (!done) {
-            (spot, done) = floodStep(self, spot);
+        return _isAdjacent(self, spot);
+    }
+
+    /// @notice Check if a tile at specific coordinates is adjacent to other tiles
+    /// @param self The map to check
+    /// @param x The x coordinate of the tile
+    /// @param y The y coordinate of the tile
+    /// @return ret True if the tile is adjacent to other tiles
+    /// @dev passing the extra initial coordinate can be used to save gas by doing some off-chain calculation
+    function isAdjacent(Map storage self, uint256 x, uint256 y) public view returns (bool ret) {
+        uint256 key = TileWithCoordLib.getKey(x, y);
+        uint256 idx = self.indexes[key];
+        if (idx == 0) {
+            // !contains
+            return false;
         }
-        uint256 len = self.values.length;
-        uint256 i;
-        for (; i < len; ++i) {
-            if (!spot[i].isEqual(self.values[i].tile)) {
-                return false;
-            }
+        TileWithCoordLib.TileWithCoord memory t = self.values[idx - 1];
+        TileLib.Tile[] memory spot = new TileLib.Tile[](self.values.length);
+        spot[idx - 1] = t.tile;
+        if (!t.contain(x, y)) {
+            // !contains
+            return false;
         }
-        return true;
+        return _isAdjacent(self, spot);
     }
 
     /// @notice Constants for bit masking operations
@@ -330,60 +349,8 @@ library SparseMap {
         Map storage self,
         TileLib.Tile[] memory current
     ) public view returns (TileLib.Tile[] memory next, bool done) {
-        uint256 len = self.values.length;
-        uint256 i;
-        uint256 x;
-        uint256 y;
-        uint256 idx;
-        TileLib.Tile memory ci;
-        next = new TileLib.Tile[](len);
-        // grow
-        for (i; i < len; ++i) {
-            ci = current[i];
-            // isEmpty
-            if (ci.data == 0) {
-                continue;
-            }
-            x = self.values[i].getX();
-            y = self.values[i].getY();
-
-            // left
-            if (x >= 16) {
-                idx = _getIdx(self, x - 16, y);
-                if (idx != 0) {
-                    next[idx - 1].data |= (ci.data & LEFT_MASK) << 15;
-                }
-            }
-            // up
-            if (y >= 16) {
-                idx = _getIdx(self, x, y - 16);
-                if (idx != 0) {
-                    next[idx - 1].data |= (ci.data & UP_MASK) << (16 * 15);
-                }
-            }
-            // middle
-            idx = _getIdx(self, x, y);
-            if (idx != 0) {
-                next[idx - 1].data |= grow(ci.data);
-            }
-            // down
-            idx = _getIdx(self, x, y + 16);
-            if (idx != 0) {
-                next[idx - 1].data |= (ci.data & DOWN_MASK) >> (16 * 15);
-            }
-            // right
-            idx = _getIdx(self, x + 16, y);
-            if (idx != 0) {
-                next[idx - 1].data |= (ci.data & RIGHT_MASK) >> 15;
-            }
-        }
-        // Mask it.
-        done = true;
-        for (i = 0; i < len; ++i) {
-            next[i].data = next[i].data & self.values[i].tile.data;
-            done = done && next[i].isEqual(current[i]);
-        }
-        return (next, done);
+        TileWithCoordCache[] memory cache = new TileWithCoordCache[](self.values.length);
+        return _floodStep(self, current, cache);
     }
 
     /// @notice Check if a rectangle is adjacent to the current map
@@ -490,5 +457,119 @@ library SparseMap {
     function _getIdx(Map storage self, uint256 x, uint256 y) private view returns (uint256) {
         uint256 key = TileWithCoordLib.getKey(x, y);
         return self.indexes[key];
+    }
+
+    /// @notice Internal function to check if all tiles in map are adjacent using flood fill
+    /// @param self The map to check adjacency in
+    /// @param spot Array of tiles representing current flood fill state
+    /// @return ret True if all tiles are adjacent to each other
+    /// @dev Uses flood fill algorithm to check connectivity between tiles
+    function _isAdjacent(Map storage self, TileLib.Tile[] memory spot) private view returns (bool ret) {
+        uint256 len = self.values.length;
+        TileWithCoordCache[] memory cache = new TileWithCoordCache[](len);
+        bool done;
+        while (!done) {
+            (spot, done) = _floodStep(self, spot, cache);
+        }
+        uint256 i;
+        for (; i < len; ++i) {
+            if (spot[i].data != cache[i].tileData) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// @notice Perform one step of the flood fill algorithm
+    /// @param self The map being flood filled
+    /// @param current Current state of flood fill
+    /// @param cache in memory copy of self.values
+    /// @return next Updated flood fill state
+    /// @return done True if flood fill is complete
+    function _floodStep(
+        Map storage self,
+        TileLib.Tile[] memory current,
+        TileWithCoordCache[] memory cache
+    ) private view returns (TileLib.Tile[] memory next, bool done) {
+        uint256 i;
+        uint256 x;
+        uint256 y;
+        uint256 idx;
+        TileLib.Tile memory ci;
+
+        uint256 len = current.length;
+        next = new TileLib.Tile[](len);
+        // grow
+        for (i; i < len; ++i) {
+            ci = current[i];
+            // isEmpty
+            if (ci.data == 0) {
+                continue;
+            }
+            // TODO: check if it is better to use in-memory Tile or TileWithCoords
+            (x, y, ) = _getFromCache(self, cache, i);
+
+            // left
+            if (x >= 16) {
+                idx = _getIdx(self, x - 16, y);
+                if (idx != 0) {
+                    next[idx - 1].data |= (ci.data & LEFT_MASK) << 15;
+                }
+            }
+            // up
+            if (y >= 16) {
+                idx = _getIdx(self, x, y - 16);
+                if (idx != 0) {
+                    next[idx - 1].data |= (ci.data & UP_MASK) << (16 * 15);
+                }
+            }
+            // middle
+            idx = _getIdx(self, x, y);
+            if (idx != 0) {
+                next[idx - 1].data |= grow(ci.data);
+            }
+            // down
+            idx = _getIdx(self, x, y + 16);
+            if (idx != 0) {
+                next[idx - 1].data |= (ci.data & DOWN_MASK) >> (16 * 15);
+            }
+            // right
+            idx = _getIdx(self, x + 16, y);
+            if (idx != 0) {
+                next[idx - 1].data |= (ci.data & RIGHT_MASK) >> 15;
+            }
+        }
+        // Mask it.
+        done = true;
+        for (i = 0; i < len; ++i) {
+            (, , x) = _getFromCache(self, cache, i);
+            next[i].data = next[i].data & x;
+            done = done && next[i].data == current[i].data;
+        }
+        return (next, done);
+    }
+
+    /// @notice Get cached tile coordinates and data or fetch from storage if not cached
+    /// @param self The map to get from
+    /// @param cache Array to cache tile information
+    /// @param i Index of the tile to get
+    /// @return uint256 X coordinate of the tile
+    /// @return uint256 Y coordinate of the tile
+    /// @return uint256 Tile data
+    /// @dev Internal helper function to optimize repeated tile access
+    function _getFromCache(
+        Map storage self,
+        TileWithCoordCache[] memory cache,
+        uint256 i
+    ) internal view returns (uint256, uint256, uint256) {
+        TileWithCoordCache memory c = cache[i];
+        if (!c.cached) {
+            TileWithCoordLib.TileWithCoord storage t = self.values[i];
+            c.cached = true;
+            c.x = t.getX();
+            c.y = t.getY();
+            c.tileData = t.tile.data;
+        }
+        return (c.x, c.y, c.tileData);
     }
 }

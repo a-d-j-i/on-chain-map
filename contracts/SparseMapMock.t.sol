@@ -50,6 +50,10 @@ contract SparseMapMock {
         return maps[idx].isAdjacent();
     }
 
+    function isAdjacentWithPixel(uint256 idx, uint256 x, uint256 y) external view returns (bool) {
+        return maps[idx].isAdjacent(x, y);
+    }
+
     function floodStep(
         uint256 idx,
         TileLib.Tile[] memory data

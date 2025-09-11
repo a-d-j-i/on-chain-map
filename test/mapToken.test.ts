@@ -317,15 +317,15 @@ describe('MapToken', function () {
     const {token, user1, admin} = await loadFixture(deployMapToken);
     await token.connect(admin).setSeeded(true);
     const tokenIds = [];
-    const cant = 16;
-    for (let i = 0; i < cant; i++) {
+    const quantity = 16;
+    for (let i = 0; i < quantity; i++) {
       tokenIds.push(await mintIsolated(token, user1, i * 16, i * 16));
     }
     const usedLen = await token.getUsedMapTileLength();
 
     const onePixTile = getEmptyTile();
     onePixTile[0][0] = true;
-    expect(usedLen).to.equal(cant);
+    expect(usedLen).to.equal(quantity);
     for (let i = 0; i < usedLen; i++) {
       const result = tileWithCoordToJS(await token.getUsedMapTile(i));
       expect(result.x).to.be.equal(BigInt(i * 16));

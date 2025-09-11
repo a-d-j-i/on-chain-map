@@ -156,9 +156,9 @@ export function printMap(
   }
 }
 
-export function createTestMap(maxx: number, maxy: number, cant: number): number[][] {
+export function createTestMap(maxx: number, maxy: number, quantity: number): number[][] {
   const rectangles = [];
-  for (let i = 0; i < cant; i++) {
+  for (let i = 0; i < quantity; i++) {
     const x = Math.floor(maxx * Math.random());
     const y = Math.floor(maxy * Math.random());
     const size = 1 + Math.floor(16 * Math.random());

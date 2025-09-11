@@ -3,6 +3,7 @@ import {describe, it} from 'mocha';
 import {network} from 'hardhat';
 import {expect} from 'chai';
 import {Contract} from 'ethers';
+
 const {
   ethers: {getContractFactory},
   networkHelpers: {loadFixture},
@@ -14,6 +15,7 @@ const eqTiles = (arr1: boolean[][], arr2: boolean[][]) =>
 
 async function floodTest(tester: Contract, isAdjacentTest: (isAdjacent: boolean) => void): Promise<void> {
   let spot = await tester.floodStepWithSpot(0);
+  // const {printTile} = await import('./helpers.ts');
   // let j = 0;
   while (!spot.done) {
     // console.log('------------------------------------', j++);
@@ -81,12 +83,16 @@ describe('SparseMap.sol flood', function () {
       await tester.set(0, 16, 16, 8);
       await adjacentTest(tester);
     });
-    it('four full tiles', async function () {
+
+    it('full map', async function () {
+      this.timeout(60000);
       const tester = await loadFixture(setupMapTest);
-      await tester.set(0, 0, 0, 16);
-      await tester.set(0, 0, 16, 16);
-      await tester.set(0, 16, 0, 16);
-      await tester.set(0, 16, 16, 16);
+      const quantity = 5;
+      for (let x = 0; x < 16 * quantity; x += 16) {
+        for (let y = 0; y < 16 * quantity; y += 16) {
+          await tester.set(0, x, y, 16);
+        }
+      }
       await adjacentTest(tester);
     });
   });
@@ -102,6 +108,24 @@ describe('SparseMap.sol flood', function () {
       await tester.set(0, 8, 8, 6);
       await tester.set(0, 36, 36, 6);
       await notAdjacentTest(tester);
+    });
+  });
+
+  describe('adjacent with initial coordinates', function () {
+    it('full map', async function () {
+      this.timeout(60000);
+      const tester = await loadFixture(setupMapTest);
+      const quantity = 6;
+      for (let x = 0; x < 16 * quantity; x += 16) {
+        for (let y = 0; y < 16 * quantity; y += 16) {
+          await tester.set(0, x, y, 16);
+        }
+      }
+      expect(await tester.isAdjacentWithPixel(0, (16 * quantity) / 2, (16 * quantity) / 2)).to.be.true;
+      console.log(
+        'Gas estimate:',
+        await tester.isAdjacentWithPixel.estimateGas(0, (16 * quantity) / 2, (16 * quantity) / 2),
+      );
     });
   });
 });

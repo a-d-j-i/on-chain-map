@@ -108,7 +108,7 @@ library TileWithCoordLib {
     /// @return True if the point is set in the tile
     function contain(TileWithCoord memory self, uint256 xi, uint256 yi) internal pure returns (bool) {
         if (getXInt(self) != xi / 16 || getYInt(self) != yi / 16) {
-            revert InvalidCoordinates(getX(self), getY(self), xi, yi);
+            return false;
         }
         return self.tile.contain(xi % 16, yi % 16);
     }
@@ -121,7 +121,7 @@ library TileWithCoordLib {
     /// @return True if the entire area is set in the tile
     function contain(TileWithCoord memory self, uint256 xi, uint256 yi, uint256 size) internal pure returns (bool) {
         if (getXInt(self) != xi / 16 || getYInt(self) != yi / 16) {
-            revert InvalidCoordinates(getX(self), getY(self), xi, yi);
+            return false;
         }
         return self.tile.contain(xi % 16, yi % 16, size);
     }
