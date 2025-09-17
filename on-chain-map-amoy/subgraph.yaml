@@ -1,0 +1,47 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: MapToken
+    network: polygon-amoy
+    source:
+      address: "0xc5277d0dBa96563475239AfdE183112a6F1CC38B"
+      abi: MapToken
+      startBlock: 26536413
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - OwnershipTransferred
+        - PatchGrown
+        - PatchMerged
+        - PatchMinted
+        - PatchSplit
+        - Transfer
+      abis:
+        - name: MapToken
+          file: ./abis/MapToken.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: PatchGrown(indexed uint256,uint256,uint256,indexed address)
+          handler: handlePatchGrown
+        - event: PatchMerged(indexed uint256,indexed uint256,indexed address)
+          handler: handlePatchMerged
+        - event: PatchMinted(indexed uint256,uint256,uint256,indexed address)
+          handler: handlePatchMinted
+        - event: PatchSplit(indexed uint256,indexed uint256,uint256,uint256,uint256,indexed address)
+          handler: handlePatchSplit
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/map-token.ts

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import type {HardhatUserConfig} from 'hardhat/config';
 import {configVariable} from 'hardhat/config';
 import hardhatToolboxMochaEthers from '@nomicfoundation/hardhat-toolbox-mocha-ethers';
@@ -22,25 +23,16 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    hardhatMainnet: {
-      type: 'edr-simulated',
-      chainType: 'l1',
-    },
-    hardhatOp: {
-      type: 'edr-simulated',
-      chainType: 'op',
-    },
-    sepolia: {
+    amoy: {
       type: 'http',
       chainType: 'l1',
-      url: configVariable('SEPOLIA_RPC_URL'),
-      accounts: [configVariable('SEPOLIA_PRIVATE_KEY')],
+      url: configVariable('AMOY_RPC_URL'),
+      accounts: [configVariable('AMOY_PRIVATE_KEY')],
     },
-    mumbai: {
-      type: 'http',
-      chainType: 'l1',
-      url: configVariable('MUMBAI_RPC_URL'),
-      accounts: [configVariable('MUMBAI_PRIVATE_KEY')],
+  },
+  verify: {
+    etherscan: {
+      apiKey: configVariable('POLYGONSCAN_API_KEY'),
     },
   },
 };
