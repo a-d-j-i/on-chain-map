@@ -1,5 +1,5 @@
 import {buildModule} from '@nomicfoundation/hardhat-ignition/modules';
-import MapToken from './MapToken';
+import MapToken from './MapToken.ts';
 
 export default buildModule('MintSeeds', m => {
   const initialOwner = m.getParameter('admin');

@@ -6,12 +6,6 @@
 logs
 *.log
 
-# Coverage directory used by tools like istanbul
-coverage
-coverage.json
-coverageEnv
-report
-
 # Dependency directory
 node_modules
 
@@ -23,13 +17,3 @@ node_modules
 
 # IntelliJ IDE
 .idea
-
-# Hardhat
-/cache
-/artifacts
-/types
-/dist
-
-# Foundry
-/out
-/cache_forge

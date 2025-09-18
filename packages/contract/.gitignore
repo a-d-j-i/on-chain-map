@@ -1,0 +1,16 @@
+# Coverage directory used by tools like istanbul
+coverage
+coverage.json
+coverageEnv
+report
+
+
+# Hardhat
+/cache
+/artifacts
+/types
+/dist
+
+# Foundry
+/out
+/cache_forge
