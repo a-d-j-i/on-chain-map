@@ -1,5 +1,5 @@
 {
-  "name": "on-chain-map-amoy",
+  "name": "on-chain-map-amoy-graph",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
